@@ -23,6 +23,14 @@ public final class Constants {
   }
 
   /**
+   * DRIVETRAIN IDS:
+   * FL - Krakens 1, 2, cancoder 11
+   * FR - Krakens 3, 4, cancoder 12
+   * BL - Krakens 5, 6, cancoder 14
+   * BR - Krakens 7, 8, cancoder 15
+   */
+
+  /**
    * Motors
    */
   public static class Motors {
