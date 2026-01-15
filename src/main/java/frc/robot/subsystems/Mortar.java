@@ -61,10 +61,18 @@ public class Mortar extends SubsystemBase {
         seathPID.setReference(lastPIDPosition, ControlType.kPosition);
     }
 
+    /**
+     * Is Seath at front or above?
+     * @return state
+     */
     public boolean C_SeathFront() {
         return seathEncoder.getPosition() >= Constants.Motors.Mortar.Hardstop.kSeathFront;
     }
-
+    
+    /**
+     * Is Seath at back or further?
+     * @return state
+     */
     public boolean C_SeathBack() {
         return seathEncoder.getPosition() <= Constants.Motors.Mortar.Hardstop.kSeathBack;
     }
