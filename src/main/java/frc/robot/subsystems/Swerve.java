@@ -1,17 +1,20 @@
 package frc.robot.subsystems;
 
 import java.io.File;
+import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.geometry.Translation2d;
 
 
 import swervelib.SwerveDrive;
+import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
 
 public class Swerve extends SubsystemBase {
@@ -31,25 +34,21 @@ public class Swerve extends SubsystemBase {
     }
   }
 
-  /** Drive with normalized inputs (-1..1). */
-  public void drive(
-      double xSpeedNorm,
-      double ySpeedNorm,
-      double omegaNorm,
-      boolean fieldRelative,
-      boolean openLoop
-  ) {
-    double vx = xSpeedNorm * MAX_SPEED_MPS;
-    double vy = ySpeedNorm * MAX_SPEED_MPS;
-    double omega = omegaNorm * MAX_ANGULAR_RAD_PER_SEC;
+  public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier headingX,
+                              DoubleSupplier headingY)
+  {
+    return run(() -> {
 
-    ChassisSpeeds speeds = fieldRelative
-        ? ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, getHeading())
-        : new ChassisSpeeds(vx, vy, omega);
+      Translation2d scaledInputs = SwerveMath.scaleTranslation(new Translation2d(translationX.getAsDouble(),
+                                                                                 translationY.getAsDouble()), 0.8);
 
-    // YAGSL has a few drive entry points depending on version.
-    // This one is common: drive(ChassisSpeeds, openLoop)
-    swerve.drive(speeds, new Translation2d(0d, 0d));
+      // Make the robot move
+      swerve.driveFieldOriented(swerve.swerveController.getTargetSpeeds(scaledInputs.getX(), scaledInputs.getY(),
+                                                                      headingX.getAsDouble(),
+                                                                      headingY.getAsDouble(),
+                                                                      swerve.getOdometryHeading().getRadians(),
+                                                                      swerve.getMaximumModuleDriveVelocity()));
+    });
   }
 
   /** Lock the wheels in an "X" to resist being pushed. */

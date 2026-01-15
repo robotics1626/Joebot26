@@ -23,6 +23,15 @@ public class Eis extends SubsystemBase {
         return mainTarget().yaw;
     }
 
+    public double returnPitch() {
+        return mainTarget().pitch;
+    }
+
+    public double returnSkew() {
+        return mainTarget().skew;
+    }
+
+
     @Override
     public void periodic() {
         recentResult = mainCamera.getLatestResult();
