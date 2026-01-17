@@ -6,12 +6,9 @@ import frc.robot.Constants;
 import frc.robot.Constants.Motors.Mortar.Hardstop;
 
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -23,13 +20,16 @@ public class Mortar extends SubsystemBase {
 
     private SparkMax seath;
     private SparkMax flywheel;
+    private SparkMax intakeWheel;
 
     private SparkMaxConfig seathConfig;
     private SparkMaxConfig flywheelConfig;
+    private SparkMaxConfig intakeWheelConfig;
 
     private SparkAbsoluteEncoder seathEncoder;
     private SparkClosedLoopController seathPID;
-    private double lastPIDPosition = 0.0;
+    private SparkClosedLoopController flywheelPID;
+    private double lastPIDPosSeath = 0.0;
 
     // private SparkAbsoluteEncoder flywheelEncoder;
 
@@ -44,7 +44,7 @@ public class Mortar extends SubsystemBase {
                 .i(Constants.Motors.Mortar.PIDValues.kSeathI)
                 .d(Constants.Motors.Mortar.PIDValues.kSeathD);
         seathConfig.closedLoop.outputRange(-1d, 1d);
-        seath.configure(seathConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        seath.configure(seathConfig, com.revrobotics.ResetMode.kResetSafeParameters, com.revrobotics.PersistMode.kPersistParameters);
 
         seathEncoder = seath.getAbsoluteEncoder();
         seathPID = seath.getClosedLoopController();
@@ -54,11 +54,11 @@ public class Mortar extends SubsystemBase {
         flywheelConfig
                 .inverted(true)
                 .idleMode(IdleMode.kBrake);
-        flywheel.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        flywheel.configure(flywheelConfig, com.revrobotics.ResetMode.kResetSafeParameters, com.revrobotics.PersistMode.kPersistParameters);
         // flywheelEncoder = flywheel.getAbsoluteEncoder();
 
-        lastPIDPosition = seathEncoder.getPosition();
-        seathPID.setReference(lastPIDPosition, ControlType.kPosition);
+        lastPIDPosSeath = seathEncoder.getPosition();
+        seathPID.setSetpoint(lastPIDPosSeath, ControlType.kPosition);
     }
 
     /**
@@ -78,11 +78,11 @@ public class Mortar extends SubsystemBase {
     }
 
     public void setSeathAngle(double d) {
-        lastPIDPosition = MathUtil.clamp(
+        lastPIDPosSeath = MathUtil.clamp(
                 d,
                 Constants.Motors.Mortar.Hardstop.kSeathBack,
                 Constants.Motors.Mortar.Hardstop.kSeathFront);
-        seathPID.setReference(lastPIDPosition, ControlType.kPosition);
+        seathPID.setSetpoint(lastPIDPosSeath, ControlType.kPosition);
     }
 
     @Override
@@ -93,14 +93,14 @@ public class Mortar extends SubsystemBase {
         boolean underBack = pos <= Hardstop.kSeathBack;
 
         // Direction-aware hardstop
-        boolean wantsForward = lastPIDPosition > pos + 1e-4;
-        boolean wantsBack = lastPIDPosition < pos - 1e-4;
+        boolean wantsForward = lastPIDPosSeath > pos + 1e-4;
+        boolean wantsBack = lastPIDPosSeath < pos - 1e-4;
 
         if ((overFront && wantsForward) || (underBack && wantsBack)) {
             // Hard override: stop output *and* hold current position as the new setpoint
             seath.set(0);
-            lastPIDPosition = pos;
-            seathPID.setReference(lastPIDPosition, ControlType.kPosition);
+            lastPIDPosSeath = pos;
+            seathPID.setSetpoint(lastPIDPosSeath, ControlType.kPosition);
         }
     }
 }
