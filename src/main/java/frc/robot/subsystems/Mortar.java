@@ -15,6 +15,10 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
 
+/** TODO
+ * Set velocity control for flywheel (PID)
+ */
+
 public class Mortar extends SubsystemBase {
     // private boolean allowMovement = true;
 
