@@ -22,6 +22,8 @@ public class SwerveSubsytem extends SubsystemBase {
   private final SwerveDrive sd;
   public final double maxmps;
   private final boolean fieldrelative;
+
+  // Aim PID: use radians for measurement, radians/sec for output.
   private final PIDController aimPID =
       new PIDController(Swerve.PIDValues.kAimP, Swerve.PIDValues.kAimI, Swerve.PIDValues.kAimD);
 
@@ -54,7 +56,7 @@ public class SwerveSubsytem extends SubsystemBase {
    */
   public SwerveSubsytem(double maxmps, File configDirectory, boolean fieldrelative) {
     try {
-      // Failsafe: check if directory is "swerve" or parent of it
+      //
       File swerveDir = configDirectory.getName().equalsIgnoreCase("swerve")
           ? configDirectory
           : new File(configDirectory, "swerve");

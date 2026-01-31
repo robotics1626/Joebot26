@@ -25,7 +25,7 @@ public final class Constants {
   public static class Controller {
     public static final int kDriverControllerPort = 0;
 
-    public static final double kJoystickDeadband = 0.05;
+    public static final double kJoystickDeadband = 0.00d;
   }
 
   public static class AprilTags {
